@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+
+  airflow-init:
+    image: apache/airflow:2.9.2
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: supersecretkey
+      _PIP_ADDITIONAL_REQUIREMENTS: faker pandas
+
+    command: >
+      bash -c "
+      airflow db init &&
+      airflow users create \
+      --username admin \
+      --password admin \
+      --firstname admin \
+      --lastname admin \
+      --role Admin \
+      --email admin@admin.com || true
+      "
+
+  airflow-webserver:
+    image: apache/airflow:2.9.2
+    depends_on:
+      - postgres
+      - airflow-init
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: supersecretkey
+      _PIP_ADDITIONAL_REQUIREMENTS: faker pandas
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+    ports:
+      - "8080:8080"
+
+    command: >
+      bash -c "
+      sleep 20 &&
+      airflow webserver
+      "
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.2
+    depends_on:
+      - postgres
+      - airflow-init
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: supersecretkey
+      _PIP_ADDITIONAL_REQUIREMENTS: faker pandas
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+    command: >
+      bash -c "
+      sleep 20 &&
+      airflow scheduler
+      "

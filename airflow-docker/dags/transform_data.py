@@ -1,7 +1,7 @@
 import pandas as pd 
 from sqlalchemy import create_engine
 
-engine = create_engine("postgresql://postgres@localhost:5432/ecommerce_db")
+engine = create_engine("postgresql://airflow:airflow@postgres:5432/airflow")
 
 # read data from database
 orders = pd.read_sql("SELECT * FROM orders", engine)

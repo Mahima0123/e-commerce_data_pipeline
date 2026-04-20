@@ -1,12 +1,12 @@
 import pandas as pd 
 from sqlalchemy import create_engine
 
-engine = create_engine("postgresql://postgres@localhost:5432/ecommerce_db")
+engine = create_engine("postgresql://airflow:airflow@postgres:5432/airflow")
 
-customers = pd.read_csv("customers.csv")
-orders = pd.read_csv("orders.csv")
+customers = pd.read_sql("SELECT * FROM customers", engine)
+orders = pd.read_sql("SELECT * FROM orders", engine)
 
-# Insert dcsv data into database
+# Insert sql data into database
 customers.to_sql("customers", engine, if_exists="append", index=False)
 orders.to_sql("orders", engine, if_exists="append", index=False)
 

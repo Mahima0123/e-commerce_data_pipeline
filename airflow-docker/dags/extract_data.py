@@ -1,8 +1,10 @@
 from faker import Faker
 import pandas as pd 
 import random
+from sqlalchemy import create_engine
 
 fake = Faker()
+engine = create_engine("postgresql://airflow:airflow@postgres:5432/airflow")
 
 # customers data
 customers = []
@@ -25,6 +27,10 @@ for _ in range(200):
         "status": random.choice(["delivered", "pending", "cancelled"])
     })
 orders_df = pd.DataFrame(orders)
+
+# load to postgres
+customers_df.to_sql("customers", engine, if_exists="replace", index=False)
+orders_df.to_sql("orders", engine, if_exists="replace", index=False)
 
 # save to CSV
 customers_df.to_csv("customers.csv", index=False)
